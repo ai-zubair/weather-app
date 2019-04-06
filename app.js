@@ -1,6 +1,6 @@
 var request = require('request');
 
-var urlString='https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyBXksvM0qgO-vKhQ-Z9siG5dAIdav7hI5U&address=1301%20lombard%20street%20philadelphia'
+var urlString='https://maps.googleapis.com/maps/api/geocode/json?key=[YOUR_API_KEY]&address=1301%20lombard%20street%20philadelphia'
 request({
     url :urlString,
     json:true
