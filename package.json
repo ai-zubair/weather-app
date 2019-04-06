@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/ai-zubair/weather-app#readme",
   "dependencies": {
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "yargs": "^13.2.2"
   }
 }
