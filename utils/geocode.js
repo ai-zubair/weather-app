@@ -27,7 +27,7 @@ const fetchAddressLocation = ( address , responseCallback ) => {
         if( error ){
             responseCallback('Oops! Looks like an error occurred during the request.');
         }else if( body.status === "ZERO_RESULTS" ){
-            responseCallback('OOPS! No reults were found for that address.');
+            responseCallback('OOPS! No such address was found.');
         }else if( body.status === "OK" ){
             responseCallback(undefined,{
                 address :body.results[0].formatted_address,
