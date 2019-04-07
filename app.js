@@ -7,4 +7,10 @@ const argv = yargs.options(appCommands.appOptions)
     .alias('help','h')
     .argv;
 
-geocode(argv.address);
+geocode(argv.address,(error,results)=>{
+    if( error ){
+        console.log(error);
+    }else{
+        console.log(JSON.stringify(results,undefined,2));
+    }
+}); 

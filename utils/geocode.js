@@ -3,7 +3,6 @@ const devAPIs = require('./dev_api');
 
 const validateInputAddress = ( address ) => {
     if( address.length === 0 ){
-        console.log('Please enter a valid address.')
         return false;
     }
     return true;
@@ -17,23 +16,26 @@ const createGeocodeRequestObject = ( address ) => {
     }
 }
 
-const handleGeocodeResponse = (error,response,body) => {
-    if( error ){
-        console.log('Oops! Looks like an error occurred during the request.');
+const fetchAddressLocation = ( address , responseCallback ) => {
+    const isValidAddress = validateInputAddress(address);
+    if( !isValidAddress ){
+        responseCallback('Invalid address.');
         return;
     }
-    const formattedAddress = body.results[0].formatted_address;
-    const lat = body.results[0].geometry.location.lat ;
-    const lng = body.results[0].geometry.location.lng ;
-    console.log(`Address : ${formattedAddress},\nLatitude:${lat}\nLongitude:${lng}`);
-}
-
-const fetchAddressLocation = ( address ) => {
-    const isValidAddress = validateInputAddress(address);
-    if( isValidAddress ){
-        const geocodeRequestObject = createGeocodeRequestObject( address );
-        request(geocodeRequestObject,handleGeocodeResponse);
-    }
+    const geocodeRequestObject = createGeocodeRequestObject( address );
+    request(geocodeRequestObject,(error,response,body) => {
+        if( error ){
+            responseCallback('Oops! Looks like an error occurred during the request.');
+        }else if( body.status === "ZERO_RESULTS" ){
+            responseCallback('OOPS! No reults were found for that address.');
+        }else if( body.status === "OK" ){
+            responseCallback(undefined,{
+                address :body.results[0].formatted_address,
+                latitude:body.results[0].geometry.location.lat ,
+                longitude:body.results[0].geometry.location.lng 
+            });
+        }
+    });
 }
 
 module.exports = fetchAddressLocation;
