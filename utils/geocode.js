@@ -1,5 +1,5 @@
 const request = require('request');
-const devAPIs = require('./devApis');
+const devAPIs = require('./devAPIs');
 
 const validateInputAddress = ( address ) => {
     if( address.length === 0 ){
