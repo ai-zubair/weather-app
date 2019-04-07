@@ -11,25 +11,25 @@ const createWeatherRequestObject = ( latitude,longitude ) => {
     }
 }
 
-const weatherData = ( addressResults , weatherCallback ) => {
+const weatherData = ( addressResults , handleWeatherData ) => {
     const latitude = addressResults.latitude;
     const longitude = addressResults.longitude;
     const weatherDataRequest = createWeatherRequestObject( latitude,longitude );
     request(weatherDataRequest,(err,res,body)=>{
         if(!err && res.statusCode === 200){
-            weatherCallback(undefined,(body.currently));
+            handleWeatherData(undefined,(body.currently));
         }else{
-            weatherCallback('Could not fetch the weather.')
+            handleWeatherData(`Could not fetch the weather for ${addressResults.address}.`)
         }
     })
 }
 
-const fetchWeatherData = ( address, callback ) => {
-    geocode(address,(error,results)=>{
+const fetchWeatherData = ( locationAddress, handleWeatherData ) => {
+    geocode(locationAddress,(error,addressResults)=>{
         if( error ){
-            callback(error);
+            handleWeatherData(error);
         }else{
-            weatherData( results, callback );
+            weatherData( addressResults, handleWeatherData );
         }
     }); 
     

@@ -15,6 +15,19 @@ const createGeocodeRequestObject = ( address ) => {
         json :true
     }
 }
+const handleLocationRequest = ( error, responseBody ,responseCallback ) => {
+    if( error ){
+        responseCallback('Oops! Looks like an error occurred during the request.');
+    }else if( responseBody.status === "ZERO_RESULTS" ){
+        responseCallback('OOPS! No such address was found.');
+    }else if( responseBody.status === "OK" ){
+        responseCallback(undefined,{
+            address :responseBody.results[0].formatted_address,
+            latitude:responseBody.results[0].geometry.location.lat ,
+            longitude:responseBody.results[0].geometry.location.lng 
+        });
+    }
+}
 
 const fetchAddressLocation = ( address , responseCallback ) => {
     const isValidAddress = validateInputAddress(address);
@@ -24,17 +37,7 @@ const fetchAddressLocation = ( address , responseCallback ) => {
     }
     const geocodeRequestObject = createGeocodeRequestObject( address );
     request(geocodeRequestObject,(error,response,body) => {
-        if( error ){
-            responseCallback('Oops! Looks like an error occurred during the request.');
-        }else if( body.status === "ZERO_RESULTS" ){
-            responseCallback('OOPS! No such address was found.');
-        }else if( body.status === "OK" ){
-            responseCallback(undefined,{
-                address :body.results[0].formatted_address,
-                latitude:body.results[0].geometry.location.lat ,
-                longitude:body.results[0].geometry.location.lng 
-            });
-        }
+        handleLocationRequest( error, body ,responseCallback )
     });
 }
 
