@@ -15,9 +15,10 @@ const weatherData = ( addressResults , handleWeatherData ) => {
     const latitude = addressResults.latitude;
     const longitude = addressResults.longitude;
     const weatherDataRequest = createWeatherRequestObject( latitude,longitude );
+    console.log(`Fetching weather for : ${addressResults.address}`)
     request(weatherDataRequest,(err,res,body)=>{
         if(!err && res.statusCode === 200){
-            handleWeatherData(undefined,(body.currently));
+            handleWeatherData(undefined,body.currently);
         }else{
             handleWeatherData(`Could not fetch the weather for ${addressResults.address}.`)
         }
