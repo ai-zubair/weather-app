@@ -1,4 +1,4 @@
-const request = require('request');
+const axios = require('axios');
 const devAPIs = require('./dev_api');
 
 const validateInputAddress = ( address ) => {
@@ -8,41 +8,42 @@ const validateInputAddress = ( address ) => {
     return true;
 }
 
-const createGeocodeRequestObject = ( address ) => {
-    const requestUrl = `${devAPIs.geocodeAPI.url}?key=${devAPIs.geocodeAPI.key}&address=${encodeURIComponent(address)}`
+const createGeocodeRequest = ( address ) => {
+    const requestUrl = `${devAPIs.geocodeAPI.url}?key=${devAPIs.geocodeAPI.key}&address=${encodeURIComponent(address)}`;
+    return requestUrl ;
+}
+
+const createLocationObject = ( locationDetails ) => {
     return {
-        url: requestUrl,
-        json :true
-    }
-}
-const handleLocationRequest = ( error, responseBody ,responseCallback,address ) => {
-    if( error ){
-        responseCallback('Oops! Looks like an error occurred connecting with the Google servers.');
-    }else if( responseBody.status === "ZERO_RESULTS" ){
-        responseCallback('OOPS! No such address was found.');
-    }else if( responseBody.status === "REQUEST_DENIED" ){
-        responseCallback('OOPS! Looks like you have an invalid geocode API key.');
-    }else if( responseBody.status === "OK" ){
-        console.log(`Location found for ${address} : ${responseBody.results[0].formatted_address}`)
-        responseCallback(undefined,{
-            address :responseBody.results[0].formatted_address,
-            latitude:responseBody.results[0].geometry.location.lat ,
-            longitude:responseBody.results[0].geometry.location.lng 
-        });
+        address : locationDetails.formatted_address,
+        latitude : locationDetails.geometry.location.lat,
+        longitude : locationDetails.geometry.location.lng
     }
 }
 
-const fetchAddressLocation = ( address , responseCallback ) => {
+const geocode = ( address ) => {
     const isValidAddress = validateInputAddress(address);
-    if( !isValidAddress ){
-        responseCallback('Invalid address.');
-        return;
-    }
-    const geocodeRequestObject = createGeocodeRequestObject( address );
-    console.log(`Fetching location results for : ${address}`)
-    request(geocodeRequestObject,(error,response,body) => {
-        handleLocationRequest( error, body ,responseCallback,address )
-    });
+    return new Promise((resolve,reject)=>{
+        if( !isValidAddress ){
+            reject('Invalid address.');
+        }else{
+            const geocodeRequest = createGeocodeRequest( address );
+            console.log(`Fetching location results for : ${address}`)
+            axios.get(geocodeRequest).then((response) => {
+                if ( response.data.status === 'ZERO_RESULTS' ){
+                    reject(`Ooops! No locations found for ${address}`)
+                }
+                if( response.data.status === "REQUEST_DENIED" ){
+                    reject('OOPS! Looks like you have an invalid geocode API key.');
+                }
+                const location = createLocationObject(response.data.results[0]);
+                console.log(`Location found for ${address} : ${location.address}`) 
+                resolve(location);
+            }).catch( (err) => {
+                reject('Uh! Oh! Could not connect to location API servers.')
+            });
+        }
+    })
 }
 
-module.exports = fetchAddressLocation;
+module.exports = geocode;

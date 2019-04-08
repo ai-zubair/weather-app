@@ -1,39 +1,37 @@
 const geocode = require('./geocode');
-const request = require('request');
+const axios = require('axios');
 const devAPIs = require('./dev_api');
 
-const createWeatherRequestObject = ( latitude,longitude ) => {
+const createWeatherRequest = ( latitude,longitude ) => {
     const queryString = 'units=si';
     const requestUrl = `${devAPIs.weatherAPI.url}/${devAPIs.weatherAPI.key}/${latitude},${longitude}?${queryString}`;
-    return {
-        url: requestUrl,
-        json :true
-    }
+    return requestUrl;
 }
 
-const weatherData = ( addressResults , handleWeatherData ) => {
-    const latitude = addressResults.latitude;
-    const longitude = addressResults.longitude;
-    const weatherDataRequest = createWeatherRequestObject( latitude,longitude );
-    console.log(`Fetching weather for : ${addressResults.address}`)
-    request(weatherDataRequest,(err,res,body)=>{
-        if(!err && res.statusCode === 200){
-            handleWeatherData(undefined,body.currently);
-        }else{
-            handleWeatherData(`Could not fetch the weather for ${addressResults.address}.`)
-        }
+const weatherData = ( location ) => {
+    const latitude = location.latitude;
+    const longitude = location.longitude;
+    const weatherDataRequest = createWeatherRequest( latitude,longitude );
+    console.log(`Fetching weather for : ${location.address}`)
+    return new Promise((resolve,reject)=>{
+        axios.get( weatherDataRequest ).then(( response )=>{
+            resolve( response.data.currently );
+        }).catch(( err )=>{
+            reject('Ah! Snap! Something went wrong while fetching the weather.');
+        })
     })
 }
 
-const fetchWeatherData = ( locationAddress, handleWeatherData ) => {
-    geocode(locationAddress,(error,addressResults)=>{
-        if( error ){
-            handleWeatherData(error);
-        }else{
-            weatherData( addressResults, handleWeatherData );
-        }
-    }); 
-    
+const fetchWeatherData = ( address ) => {
+    return new Promise((resolve,reject)=>{
+        geocode( address ).then(( location )=>{
+            return weatherData( location ) ;
+        }).then(( weather )=>{
+            resolve( weather )
+        }).catch(( err )=>{
+            reject( err )
+        })
+    })
 }
 
 module.exports = fetchWeatherData;

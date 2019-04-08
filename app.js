@@ -7,10 +7,8 @@ const argv = yargs.options(appCommands.appOptions)
     .alias('help','h')
     .argv;
 
-fetchWeatherData(argv.address,(error,results)=>{
-    if( error ){
-        console.log(error);
-    }else{
+fetchWeatherData(argv.address).then((results)=>{
         console.log(JSON.stringify(results,undefined,2));
-    }
-})
+    }).catch((err)=>{
+        console.log(err);
+    })
